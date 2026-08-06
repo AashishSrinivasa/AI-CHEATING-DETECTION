@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-head ops-head">
+  <div>
+    <h1>Exam Monitoring Console</h1>
+    <p>Live classroom monitoring, recorded-session analysis, and incident review in one local
+       Flask/OpenCV system with configurable risk scoring.</p>
+  </div>
+  <div class="head-actions">
+    <a class="btn btn-primary" href="{{ url_for('live_page') }}">Start Live Monitoring</a>
+    <a class="btn" href="{{ url_for('upload_page') }}">Analyse Recording</a>
+  </div>
+</div>
+
+<div class="grid grid-4" style="margin-bottom: var(--gap);">
+  <div class="stat"><span class="label">Sessions analysed</span>
+    <span class="value brand" data-count="{{ stats.total_jobs }}">0</span><span class="foot">all time</span></div>
+  <div class="stat"><span class="label">In progress</span>
+    <span class="value" data-count="{{ stats.processing }}">0</span><span class="foot">processing / queued</span></div>
+  <div class="stat"><span class="label">Students monitored</span>
+    <span class="value ok" data-count="{{ stats.total_students }}">0</span><span class="foot">across sessions</span></div>
+  <div class="stat"><span class="label">Incidents flagged</span>
+    <span class="value high" data-count="{{ stats.total_alerts }}">0</span><span class="foot">total alerts</span></div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom: var(--gap);">
+  <div class="card readiness-card">
+    <div class="card-titleline">
+      <h2>System Readiness</h2>
+      <span class="badge status-pill" id="systemState">Checking</span>
+    </div>
+    <div class="engine-grid" id="systemEngines">
+      <div class="kv"><span class="k">Object engine</span><span class="mono">checking</span></div>
+      <div class="kv"><span class="k">Head pose</span><span class="mono">checking</span></div>
+      <div class="kv"><span class="k">Tracking</span><span class="mono">checking</span></div>
+      <div class="kv"><span class="k">Device</span><span class="mono">checking</span></div>
+    </div>
+    <div id="systemWarnings" class="notice hidden"></div>
+  </div>
+  <div class="card policy-card">
+    <h2>Review Policy</h2>
+    <p class="sub">Automated flags are triage signals, not final proof. Use consent notices,
+       role-based access, short retention windows, and human review before action.</p>
+    <div class="policy-list">
+      <span>Local processing</span>
+      <span>Downloadable evidence</span>
+      <span>Configurable sensitivity</span>
+      <span>Audit history</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-sidebar">
+  <div class="card">
+    <h2>Recent Sessions</h2>
+    {% if jobs %}
+    <table class="table">
+      <thead><tr><th>File</th><th>Status</th><th class="num">Students</th><th class="num">Alerts</th><th></th></tr></thead>
+      <tbody>
+        {% for j in jobs %}
+        <tr>
+          <td>{{ j.filename }}<br><span class="student-meta">{{ j.created_at }}</span></td>
+          <td><span class="badge status-pill status-{{ j.status }}">{{ j.status }}</span></td>
+          <td class="num">{{ j.total_students if j.total_students is not none else '—' }}</td>
+          <td class="num">{{ j.total_alerts if j.total_alerts is not none else '—' }}</td>
+          <td class="num">
+            {% if j.status == 'completed' %}
+              <a class="btn btn-sm" href="{{ url_for('report_page', job_id=j.job_id) }}">View report</a>
+            {% else %}
+              <a class="btn btn-sm btn-ghost" href="{{ url_for('history_page') }}">Track</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty"><div class="big">LOG</div>No sessions yet. Start a live session or upload a video to begin.</div>
+    {% endif %}
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:var(--gap);">
+    <div class="card">
+      <h3>Detection Pipeline</h3>
+      <div class="feat"><div class="fico">1</div><div><div class="ft">Head-Pose Analysis</div><div class="fd">Yaw/pitch via facial landmarks or Haar fallback</div></div></div>
+      <div class="feat"><div class="fico">2</div><div><div class="ft">Object Detection</div><div class="fd">YOLOv8 + YOLO-World for phones, notes, headphones and earbuds</div></div></div>
+      <div class="feat"><div class="fico">3</div><div><div class="ft">Multi-Object Tracking</div><div class="fd">DeepSORT identities with built-in IoU fallback</div></div></div>
+      <div class="feat"><div class="fico">4</div><div><div class="ft">Movement &amp; Proximity</div><div class="fd">Velocity, acceleration and inter-student distance</div></div></div>
+      <div class="feat"><div class="fico">5</div><div><div class="ft">Behavioural Scoring</div><div class="fd">Unified 0.0-1.0 risk index, colour-coded</div></div></div>
+    </div>
+    <div class="card">
+      <h3>Risk Severity Scale</h3>
+      <div class="sevbars">
+        {% for b in severity_bands %}
+        <div class="row">
+          <span><span class="badge sev sev-{{ b.name }}">{{ b.name }}</span></span>
+          <div class="bar"><span style="width:100%; background:{{ b.hex }}"></span></div>
+          <span class="num mono">{{ '%.2f'|format(b.lo) }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Not found{% endblock %}
+{% block content %}
+<div class="empty" style="padding:80px 20px;">
+  <div class="big">404</div>
+  <h1 style="margin:8px 0;">404 — Not found</h1>
+  <p>That page or session doesn't exist.</p>
+  <div style="margin-top:16px;"><a class="btn btn-primary" href="{{ url_for('index') }}">Back to dashboard</a></div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.Python
+.pytest_cache/
+.mypy_cache/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Model weights (downloaded automatically on first run)
+models/*
+weights/
+*.pt
+*.onnx
+*.engine
+*.task
+!models/.gitkeep
+
+# Generated artefacts
+uploads/*
+outputs/*
+reports/*
+data/history.json
+!uploads/.gitkeep
+!outputs/.gitkeep
+!reports/.gitkeep
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+.claude/
+*.log

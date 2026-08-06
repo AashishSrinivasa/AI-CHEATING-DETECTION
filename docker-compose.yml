@@ -1,0 +1,20 @@
+services:
+  cheatguard:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-change-this-before-production}
+      DEVICE: ${DEVICE:-auto}
+      FLASK_DEBUG: "0"
+      PORT: "8000"
+      LIVE_USE_DEEPSORT: ${LIVE_USE_DEEPSORT:-0}
+      LIVE_WORLD_FRAME_INTERVAL: ${LIVE_WORLD_FRAME_INTERVAL:-2}
+      VIDEO_WORLD_FRAME_INTERVAL: ${VIDEO_WORLD_FRAME_INTERVAL:-1}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+      - ./reports:/app/reports
+      - ./data:/app/data
+      - ./models:/app/models
+    restart: unless-stopped

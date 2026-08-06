@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Upload Video{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Video Upload &amp; Processing</h1>
+  <p>Upload a recorded examination (up to {{ max_upload_mb }} MB · {{ allowed_ext|join(', ')|upper }}).
+     The system analyses every frame in the background and produces an annotated video plus a
+     frame-accurate JSON incident report.</p>
+</div>
+
+<div class="grid grid-sidebar">
+  <div class="card">
+    <form id="uploadForm">
+      <div id="dropzone" class="dropzone" data-max="{{ max_upload_mb }}">
+        <div class="big">MP4</div>
+        <strong>Drag &amp; drop a video here</strong>
+        <div class="hint">or click to browse — {{ allowed_ext|join(', ')|upper }}, max {{ max_upload_mb }} MB</div>
+        <input id="fileInput" type="file" accept=".mp4,.avi,.mov,.mkv" class="hidden" />
+      </div>
+
+      <div id="fileInfo" class="hidden" style="margin-top:14px;">
+        <div class="kv"><span class="k">File</span><span id="fileName" class="mono"></span></div>
+        <div class="kv"><span class="k">Size</span><span id="fileSize" class="mono"></span></div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <div class="student-meta" style="margin-bottom:8px;">Detection sensitivity</div>
+        <div class="segmented" id="sensitivityGroup">
+          {% for key, profile in sensitivity_profiles.items() %}
+          <label class="{{ 'active' if key == default_sensitivity else '' }}">
+            <input type="radio" name="sensitivity" value="{{ key }}" {{ 'checked' if key == default_sensitivity else '' }}>
+            {{ profile.label }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div id="progressWrap" class="hidden">
+        <div class="progress"><span id="progressBar"></span></div>
+        <div class="student-meta" id="progressMsg">Uploading…</div>
+      </div>
+
+      <div id="flash" class="flash err hidden" style="margin-top:14px;"></div>
+
+      <div style="margin-top:16px; display:flex; gap:10px;">
+        <button id="submitBtn" type="submit" class="btn btn-primary" disabled>Analyse Video</button>
+        <button id="resetBtn" type="button" class="btn btn-ghost hidden">Upload another</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>How it works</h3>
+    <div class="kv"><span class="k">1 · Detect</span><span>YOLOv8 finds people &amp; objects</span></div>
+    <div class="kv"><span class="k">2 · Track</span><span>DeepSORT assigns student IDs</span></div>
+    <div class="kv"><span class="k">3 · Analyse</span><span>Head-pose &amp; movement scoring</span></div>
+    <div class="kv"><span class="k">4 · Report</span><span>Annotated video + JSON timeline</span></div>
+    <p class="sub" style="margin-top:14px;">A 10-minute 1080p clip processes in ≈5–10 min on CPU,
+       ≈2–3 min with a CUDA GPU. You can leave this page — track progress under
+       <a href="{{ url_for('history_page') }}" style="color:var(--brand)">History</a>.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+{% endblock %}

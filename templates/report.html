@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Report · {{ job.filename }}{% endblock %}
+
+{% block content %}
+<div class="page-head" style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap;">
+  <div>
+    <h1>Incident Report</h1>
+    <p>{{ job.filename }} · analysed {{ job.updated_at or job.created_at }}</p>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <a class="btn" href="{{ url_for('download_video', job_id=job.job_id) }}">Download video</a>
+    <a class="btn" href="{{ url_for('download_report', job_id=job.job_id) }}">Download JSON</a>
+  </div>
+</div>
+
+<input type="hidden" id="jobId" value="{{ job.job_id }}" />
+<input type="hidden" id="videoFile" value="{{ job.output_video or '' }}" />
+
+<div class="grid grid-4" style="margin-bottom:var(--gap);">
+  <div class="stat"><span class="label">Students</span><span class="value brand" id="sStudents">—</span></div>
+  <div class="stat"><span class="label">Total incidents</span><span class="value high" id="sAlerts">—</span></div>
+  <div class="stat"><span class="label">Duration</span><span class="value" id="sDuration">—</span></div>
+  <div class="stat"><span class="label">Processing time</span><span class="value" id="sProc">—</span></div>
+</div>
+
+<div class="grid grid-sidebar">
+  <div style="display:flex; flex-direction:column; gap:var(--gap);">
+    <div class="card report-video">
+      <h3>Annotated Playback</h3>
+      {% if job.output_video %}
+      <video id="player" controls preload="metadata"
+             src="{{ url_for('serve_output', filename=job.output_video) }}"></video>
+      {% else %}
+      <div class="empty">Annotated video unavailable.</div>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h3>Incident Timeline</h3>
+      <p class="sub">Each marker is an incident, coloured by severity. Click a marker to jump to that moment.</p>
+      <div id="timeline" class="timeline"></div>
+      <div class="timeline-axis"><span>00:00</span><span id="tlEnd">—</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Per-Student Breakdown</h3>
+      <table class="table" id="studentTable">
+        <thead><tr>
+          <th>Student</th><th>Peak severity</th><th class="num">Peak risk</th>
+          <th class="num">Alerts</th><th>Behaviours</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Incident Log</h3>
+      <table class="table" id="alertTable">
+        <thead><tr><th>Time</th><th class="num">Frame</th><th>Student</th><th>Behaviour</th><th>Severity</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:var(--gap);">
+    <div class="card">
+      <h3>Severity Distribution</h3>
+      <div class="donut-wrap">
+        <div class="donut" id="sevDonut"></div>
+        <div class="donut-legend" id="sevDonutLegend"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Incident Types</h3>
+      <div class="sevbars" id="typeDist"></div>
+    </div>
+    <div class="card">
+      <h3>Source Details</h3>
+      <div class="kv"><span class="k">Resolution</span><span id="mRes" class="mono">—</span></div>
+      <div class="kv"><span class="k">FPS</span><span id="mFps" class="mono">—</span></div>
+      <div class="kv"><span class="k">Frames</span><span id="mFrames" class="mono">—</span></div>
+      <div class="kv"><span class="k">Device</span><span id="mDevice" class="mono">—</span></div>
+      <div class="kv"><span class="k">Objects</span><span id="mObjects" class="mono">—</span></div>
+      <div class="kv"><span class="k">Sensitivity</span><span id="mSensitivity" class="mono">—</span></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/report.js') }}"></script>
+{% endblock %}

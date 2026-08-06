@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Processing History{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Processing History</h1>
+  <p>All analysed sessions. Jobs still processing update automatically. Open a completed job to view
+     its annotated video, incident timeline and downloadable JSON report.</p>
+</div>
+
+<div class="card">
+  {% if jobs %}
+  <table class="table" id="historyTable">
+    <thead>
+      <tr>
+        <th>File</th><th>Status</th><th class="num">Duration</th>
+        <th class="num">Students</th><th class="num">Alerts</th><th>Created</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for j in jobs %}
+      <tr data-job="{{ j.job_id }}" data-status="{{ j.status }}">
+        <td>{{ j.filename }}</td>
+        <td class="status-cell"><span class="badge status-pill status-{{ j.status }}">{{ j.status }}</span>
+          {% if j.status in ('processing','queued') %}
+          <div class="progress" style="margin:8px 0 0;height:6px;"><span class="prog" style="width:{{ j.progress }}%"></span></div>
+          {% endif %}
+        </td>
+        <td class="num">{{ '%d:%02d'|format((j.duration_sec or 0)//60, (j.duration_sec or 0)%60) if j.duration_sec else '—' }}</td>
+        <td class="num">{{ j.total_students if j.total_students is not none else '—' }}</td>
+        <td class="num">{{ j.total_alerts if j.total_alerts is not none else '—' }}</td>
+        <td><span class="student-meta">{{ j.created_at }}</span></td>
+        <td class="num" style="white-space:nowrap;">
+          {% if j.status == 'completed' %}
+          <a class="btn btn-sm" href="{{ url_for('report_page', job_id=j.job_id) }}">Report</a>
+          {% endif %}
+          <button class="btn btn-sm btn-danger del-btn" data-job="{{ j.job_id }}">Delete</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty"><div class="big">LOG</div>No processing history yet.
+    <div style="margin-top:12px;"><a class="btn btn-primary" href="{{ url_for('upload_page') }}">Upload a video</a></div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+{% endblock %}

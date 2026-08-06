@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Live Monitoring{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Live Camera Detection</h1>
+  <p>Real-time monitoring of the webcam feed. Detected students are boxed and colour-coded by risk;
+     prohibited objects and proximity interactions are highlighted instantly.</p>
+</div>
+
+<div class="live-controls">
+  <button id="startBtn" class="btn btn-primary">Start Monitoring</button>
+  <button id="stopBtn" class="btn btn-danger" disabled>Stop</button>
+  <div class="segmented" id="sensitivityGroup" aria-label="Detection sensitivity">
+    {% for key, profile in sensitivity_profiles.items() %}
+    <label class="{{ 'active' if key == default_sensitivity else '' }}">
+      <input type="radio" name="sensitivity" value="{{ key }}" {{ 'checked' if key == default_sensitivity else '' }}>
+      {{ profile.label }}
+    </label>
+    {% endfor %}
+  </div>
+  <span class="badge"><span id="statusDot" class="dot"></span><span id="statusText">Idle</span></span>
+  <span class="badge">FPS <strong id="fps" class="mono">0</strong></span>
+  <span class="badge">Students <strong id="count" class="mono">0</strong></span>
+  <span class="badge">Alerts <strong id="alertCount" class="mono">0</strong></span>
+  <label class="badge" style="gap:8px;">Source
+    <input id="source" value="0" class="mono" style="width:54px;background:transparent;border:none;color:var(--text);" />
+  </label>
+</div>
+
+<div id="flash" class="flash err hidden"></div>
+
+<div class="grid grid-sidebar">
+  <div class="card" style="padding:14px;">
+    <div class="video-wrap">
+      <span id="recBadge" class="rec-badge"><span class="rec-dot"></span>LIVE</span>
+      <img id="feed" class="hidden" alt="Live monitoring feed" />
+      <div id="placeholder" class="video-placeholder">
+        <div class="big">CAM</div>
+        Press <strong>Start Monitoring</strong> to begin the live feed.<br>
+        <span class="student-meta">The camera is only accessed while a session is active.</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:var(--gap);">
+    <div class="card">
+      <h3>Malpractice Signals</h3>
+      <div class="policy-list signal-list">
+        <span>Headphones</span>
+        <span>Earbuds</span>
+        <span>Phone</span>
+        <span>Smart watch</span>
+        <span>Paper / notes</span>
+        <span>Calculator</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Students &amp; Risk</h3>
+      <div id="students" class="student-list">
+        <div class="empty" style="padding:20px;">No students detected yet.</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Live Alert Feed</h3>
+      <div id="alerts" class="alert-feed">
+        <div class="empty" style="padding:20px;">Alerts will appear here.</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/live.js') }}"></script>
+{% endblock %}
