@@ -33,6 +33,13 @@
   </header>
 
   <main class="container">
+    {% if is_vercel %}
+    <div class="notice" style="margin-bottom: var(--gap);">
+      <strong>Vercel web deployment:</strong> dashboard and reports are online, but the
+      local computer-vision engines are disabled in this serverless build. Run the
+      Docker deployment for YOLO, MediaPipe, webcam and video processing.
+    </div>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
 
