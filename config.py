@@ -25,11 +25,17 @@ import os
 # --------------------------------------------------------------------------- #
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-OUTPUT_FOLDER = os.path.join(BASE_DIR, "outputs")
-REPORT_FOLDER = os.path.join(BASE_DIR, "reports")
-MODEL_FOLDER = os.path.join(BASE_DIR, "models")
-DATA_FOLDER = os.path.join(BASE_DIR, "data")
+# Vercel Functions have a read-only application directory. Put mutable runtime
+# data in their writable /tmp volume while retaining the normal project-local
+# folders for local, Docker and traditional server deployments.
+IS_VERCEL = os.environ.get("VERCEL", "") == "1"
+RUNTIME_DIR = os.path.join("/tmp", "cheatguard") if IS_VERCEL else BASE_DIR
+
+UPLOAD_FOLDER = os.path.join(RUNTIME_DIR, "uploads")
+OUTPUT_FOLDER = os.path.join(RUNTIME_DIR, "outputs")
+REPORT_FOLDER = os.path.join(RUNTIME_DIR, "reports")
+MODEL_FOLDER = os.path.join(RUNTIME_DIR, "models")
+DATA_FOLDER = os.path.join(RUNTIME_DIR, "data")
 
 for _d in (UPLOAD_FOLDER, OUTPUT_FOLDER, REPORT_FOLDER, MODEL_FOLDER, DATA_FOLDER):
     os.makedirs(_d, exist_ok=True)

@@ -1,0 +1,13 @@
+# Local ML weights and runtime-generated data are not part of the Vercel web
+# function. Keeping them out avoids uploading hundreds of megabytes of models.
+models/**
+weights/**
+.venv/**
+uploads/**
+outputs/**
+reports/**
+data/**
+tests/**
+.claude/**
+__pycache__/**
+.git/**

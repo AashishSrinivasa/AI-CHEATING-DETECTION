@@ -90,14 +90,20 @@ to jump straight to that moment in the video.
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 
-# 2. Install dependencies
-pip install -r requirements.txt
+# 2. Install the full computer-vision dependencies
+pip install -r requirements.full.txt
 
 # 3. Run (model weights download automatically on first run)
 python app.py
 ```
 
 Open **http://127.0.0.1:5000**.
+
+`requirements.txt` is intentionally limited to the Flask web runtime used by
+Vercel. Use `requirements.full.txt` for local/Docker deployments that enable
+the computer-vision engines. Vercel's serverless bundle cannot carry the full
+PyTorch/YOLO stack; its deployment therefore provides the dashboard and report
+UI, while live camera and video inference require the Docker deployment.
 
 If you start the app before installing the full ML stack, it still runs in a
 degraded but usable mode with OpenCV person/head-pose fallbacks. Install the full

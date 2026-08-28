@@ -60,6 +60,7 @@ def inject_globals():
         "allowed_ext": sorted(config.ALLOWED_EXTENSIONS),
         "sensitivity_profiles": config.SENSITIVITY_PROFILES,
         "default_sensitivity": _valid_sensitivity(config.DEFAULT_SENSITIVITY),
+        "is_vercel": config.IS_VERCEL,
     }
 
 

@@ -17,9 +17,9 @@ RUN apt-get update \
         libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY requirements.full.txt .
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+    && pip install --no-cache-dir -r requirements.full.txt
 
 COPY . .
 RUN mkdir -p uploads outputs reports models data
