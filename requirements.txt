@@ -19,7 +19,7 @@ ultralytics>=8.1.0
 torch>=2.0
 torchvision>=0.15
 # Required by YOLO-World for open-vocabulary objects such as headphones/earbuds.
-git+https://github.com/ultralytics/CLIP.git
+clip @ git+https://github.com/ultralytics/CLIP.git
 
 # --- Head pose (facial landmarks) ---
 mediapipe>=0.10.9

@@ -38,3 +38,4 @@ data/history.json
 .vscode/
 .claude/
 *.log
+.vercel
