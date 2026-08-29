@@ -37,6 +37,13 @@ jobs = JobManager()
 live_processor = None
 live_lock = threading.Lock()
 
+VERCEL_CV_MESSAGE = (
+    "Live camera monitoring is unavailable on Vercel. This deployment uses "
+    "serverless functions, which cannot access your webcam or run the OpenCV "
+    "background worker. Deploy the Docker version to a persistent server "
+    "(Render, Railway, Fly.io, or a VPS) for live detection."
+)
+
 
 def _valid_sensitivity(value):
     if value in config.SENSITIVITY_PROFILES:
@@ -115,6 +122,9 @@ def report_page(job_id):
 @app.route("/api/live/start", methods=["POST"])
 def api_live_start():
     global live_processor
+    if config.IS_VERCEL:
+        return jsonify(error=VERCEL_CV_MESSAGE,
+                       code="LIVE_UNAVAILABLE_ON_VERCEL"), 503
     try:
         from core.live_processor import LiveProcessor
     except Exception as exc:  # noqa: BLE001
@@ -177,6 +187,15 @@ def video_feed():
 # --------------------------------------------------------------------------- #
 @app.route("/api/upload", methods=["POST"])
 def api_upload():
+    if config.IS_VERCEL:
+        return jsonify(
+            error=(
+                "Video processing is unavailable on Vercel because it needs "
+                "OpenCV, ML models, persistent storage, and a background worker. "
+                "Use the Docker deployment for video analysis."
+            ),
+            code="VIDEO_UNAVAILABLE_ON_VERCEL",
+        ), 503
     if "video" not in request.files:
         return jsonify(error="No file part in request."), 400
     file = request.files["video"]

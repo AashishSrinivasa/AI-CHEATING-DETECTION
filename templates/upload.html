@@ -9,6 +9,13 @@
      frame-accurate JSON incident report.</p>
 </div>
 
+{% if is_vercel %}
+<div class="notice" style="margin-bottom: var(--gap);">
+  Video processing is disabled in this Vercel deployment. Use the Docker
+  deployment for OpenCV analysis, annotated output video, and reports.
+</div>
+{% endif %}
+
 <div class="grid grid-sidebar">
   <div class="card">
     <form id="uploadForm">

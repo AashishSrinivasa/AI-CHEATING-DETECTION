@@ -8,8 +8,18 @@
      prohibited objects and proximity interactions are highlighted instantly.</p>
 </div>
 
+{% if is_vercel %}
+<div class="notice" style="margin-bottom: var(--gap);">
+  Live camera detection is disabled in this Vercel deployment. Vercel functions
+  cannot access a visitor's webcam or keep the OpenCV worker running. Deploy the
+  Docker version to a persistent server to use this feature.
+</div>
+{% endif %}
+
 <div class="live-controls">
-  <button id="startBtn" class="btn btn-primary">Start Monitoring</button>
+  <button id="startBtn" class="btn btn-primary" {{ 'disabled' if is_vercel else '' }}>
+    {{ 'Unavailable on Vercel' if is_vercel else 'Start Monitoring' }}
+  </button>
   <button id="stopBtn" class="btn btn-danger" disabled>Stop</button>
   <div class="segmented" id="sensitivityGroup" aria-label="Detection sensitivity">
     {% for key, profile in sensitivity_profiles.items() %}
