@@ -55,18 +55,43 @@ except Exception:
     _TASKS_AVAILABLE = False
 
 
+# Generic 3D face model, expressed in the SAME axes as the OpenCV camera:
+# x to the image right, y DOWN, z AWAY from the camera (into the scene).
+# A face looking straight at the camera therefore has an identity rotation,
+# so pitch/yaw/roll are ~0 for a frontal face. (An earlier version used y-up /
+# z-towards-viewer coordinates, which made solvePnP return a 180° flip about
+# the x-axis and pitch values around ±180°.)
 _MODEL_POINTS = np.array(
     [
         (0.0, 0.0, 0.0),        # 1   nose tip
-        (0.0, -63.6, -12.5),    # 199 chin
-        (-43.3, 32.7, -26.0),   # 33  left eye, outer corner
-        (43.3, 32.7, -26.0),    # 263 right eye, outer corner
-        (-28.9, -28.9, -24.1),  # 61  left mouth corner
-        (28.9, -28.9, -24.1),   # 291 right mouth corner
+        (0.0, 63.6, 12.5),      # 199 chin (below and behind the nose tip)
+        (-43.3, -32.7, 26.0),   # 33  outer eye corner, image left
+        (43.3, -32.7, 26.0),    # 263 outer eye corner, image right
+        (-28.9, 28.9, 24.1),    # 61  mouth corner, image left
+        (28.9, 28.9, 24.1),     # 291 mouth corner, image right
     ],
     dtype=np.float64,
 )
 _LANDMARK_IDS = [1, 199, 33, 263, 61, 291]
+
+
+def solve_head_pose(image_points, frame_w, frame_h):
+    """Solve head pose from the six image points matching ``_MODEL_POINTS``.
+
+    Returns (pitch, yaw, roll) in degrees, or None if solvePnP fails.
+    Sign convention: pitch > 0 = looking DOWN, pitch < 0 = looking up;
+    |yaw| grows as the head turns sideways (sign = direction).
+    """
+    focal = float(frame_w)
+    cam = np.array([[focal, 0, frame_w / 2.0], [0, focal, frame_h / 2.0], [0, 0, 1]],
+                   dtype=np.float64)
+    dist = np.zeros((4, 1), dtype=np.float64)
+    ok, rvec, _t = cv2.solvePnP(_MODEL_POINTS, np.asarray(image_points, dtype=np.float64),
+                                cam, dist, flags=cv2.SOLVEPNP_ITERATIVE)
+    if not ok:
+        return None
+    rmat, _ = cv2.Rodrigues(rvec)
+    return _rotation_matrix_to_euler(rmat)
 
 
 def _rotation_matrix_to_euler(R):
@@ -198,10 +223,6 @@ class HeadPoseDetector:
         if not faces_lms:
             return []
 
-        focal = float(w)
-        cam = np.array([[focal, 0, w / 2.0], [0, focal, h / 2.0], [0, 0, 1]], dtype=np.float64)
-        dist = np.zeros((4, 1), dtype=np.float64)
-
         faces = []
         for lms in faces_lms:
             if len(lms) <= max(_LANDMARK_IDS):
@@ -211,12 +232,10 @@ class HeadPoseDetector:
             xs = [p[0] * w for p in lms]
             ys = [p[1] * h for p in lms]
             x1, y1, x2, y2 = int(min(xs)), int(min(ys)), int(max(xs)), int(max(ys))
-            ok, rvec, _t = cv2.solvePnP(_MODEL_POINTS, image_points, cam, dist,
-                                        flags=cv2.SOLVEPNP_ITERATIVE)
-            if not ok:
+            pose = solve_head_pose(image_points, w, h)
+            if pose is None:
                 continue
-            rmat, _ = cv2.Rodrigues(rvec)
-            pitch, yaw, roll = _rotation_matrix_to_euler(rmat)
+            pitch, yaw, roll = pose
             faces.append({
                 "bbox": [x1, y1, x2, y2],
                 "center": ((x1 + x2) // 2, (y1 + y2) // 2),
